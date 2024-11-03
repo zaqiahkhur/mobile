@@ -4,7 +4,7 @@ import 'package:uasmobile/daftar_peminjaman_page.dart';
 import 'home_page.dart';
 import 'daftar_barang_page.dart';
 import 'peminjaman_page.dart';
-import 'admin_page.dart';
+import 'user_page.dart';
 import 'loginpage.dart';
 void main() {
   runApp(BorrowingApp());

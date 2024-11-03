@@ -15,6 +15,7 @@ class PeminjamanPage extends StatefulWidget {
 
 class _PeminjamanPageState extends State<PeminjamanPage> {
   final _formKey = GlobalKey<FormState>();
+   final TextEditingController _noidentitasController = TextEditingController();
   final TextEditingController _jumlahbarangController = TextEditingController();
   final TextEditingController _tanggalPinjamController = TextEditingController();
   final TextEditingController _tanggalKembaliController = TextEditingController();
@@ -23,12 +24,13 @@ class _PeminjamanPageState extends State<PeminjamanPage> {
   TextEditingController _dateController = TextEditingController();
 
   // Untuk Dropdown No Identitas
-  List<String> _listNoIdentitas = [];
-  String? _selectedNoIdentitas;
-  bool _isLoading = true; // Indikator loading
+  // List<String> _listNoIdentitas = [];
+  // String? _selectedNoIdentitas;
+  // bool _isLoading = true; // Indikator loading
 
   @override
   void dispose() {
+    _noidentitasController.dispose();
     _jumlahbarangController.dispose();
     _tanggalPinjamController.dispose();
     _dateController.dispose();
@@ -38,20 +40,20 @@ class _PeminjamanPageState extends State<PeminjamanPage> {
   }
 
   // Fungsi untuk mengambil data dari API
-  Future<void> fetchNoIdentitas() async {
-    final response = await http.get(Uri.parse('http://10.108.19.8/jsonmobile/noidentitas.php'));
+  // Future<void> fetchNoIdentitas() async {
+  //   final response = await http.get(Uri.parse('http://192.168.43.159/jsonmobile/noidentitas.php'));
 
-    if (response.statusCode == 200) {
-      final List<dynamic> data = json.decode(response.body);
+  //   if (response.statusCode == 200) {
+  //     final List<dynamic> data = json.decode(response.body);
       
-      setState(() {
-        _listNoIdentitas = data.map((item) => item['no_identitas'].toString()).toList();
-        _isLoading = false; // Selesai loading
-      });
-    } else {
-      throw Exception('Failed to load No Identitas');
-    }
-  }
+  //     setState(() {
+  //       _listNoIdentitas = data.map((item) => item['no_identitas'].toString()).toList();
+  //       _isLoading = false; // Selesai loading
+  //     }); 
+  //   } else {
+  //     throw Exception('Failed to load No Identitas');
+  //   }
+  // }
 
   // Fungsi untuk memilih tanggal
   Future<void> _selectDate() async {
@@ -72,10 +74,10 @@ class _PeminjamanPageState extends State<PeminjamanPage> {
   Future<bool> _submitPeminjaman() async {
     try {
       final response = await http.post(
-        Uri.parse("http://10.108.19.8/jsonmobile/peminjaman.php"),
+        Uri.parse("http://192.168.43.159/jsonmobile/peminjaman.php"),
         body: {
           "kode_barang": widget.kodeBarang,
-          "no_identitas": _selectedNoIdentitas!,
+          "no_identitas": _noidentitasController.text,
           "Jumlah_barang": _jumlahbarangController.text,
           "tanggal_pinjam": _tanggalPinjamController.text,
           "tanggal_kembali": _dateController.text,
@@ -106,11 +108,11 @@ class _PeminjamanPageState extends State<PeminjamanPage> {
     }
   }
 
-  @override
-  void initState() {
-    super.initState();
-    fetchNoIdentitas(); // Panggil API untuk mendapatkan No Identitas
-  }
+  // @override
+  // void initState() {
+  //   super.initState();
+  //   fetchNoIdentitas(); // Panggil API untuk mendapatkan No Identitas
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -130,35 +132,50 @@ class _PeminjamanPageState extends State<PeminjamanPage> {
                 SizedBox(height: 10),
 
                 // Dropdown untuk No Identitas
-                _isLoading 
-                  ? CircularProgressIndicator() // Jika sedang loading
-                  : DropdownButtonFormField<String>(
-                      value: _selectedNoIdentitas,
-                      hint: const Text("Pilih No Identitas"),
-                      decoration: InputDecoration(
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                      ),
-                      items: _listNoIdentitas.map((String value) {
-                        return DropdownMenuItem<String>(
-                          value: value,
-                          child: Text(value),
-                        );
-                      }).toList(),
-                      onChanged: (newValue) {
-                        setState(() {
-                          _selectedNoIdentitas = newValue!;
-                        });
-                      },
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'No Identitas tidak boleh kosong';
-                        }
-                        return null;
-                      },
+                // _isLoading 
+                //   ? CircularProgressIndicator() // Jika sedang loading
+                //   : DropdownButtonFormField<String>(
+                //       value: _selectedNoIdentitas,
+                //       hint: const Text("Pilih No Identitas"),
+                //       decoration: InputDecoration(
+                //         border: OutlineInputBorder(
+                //           borderRadius: BorderRadius.circular(20),
+                //         ),
+                //       ),
+                //       items: _listNoIdentitas.map((String value) {
+                //         return DropdownMenuItem<String>(
+                //           value: value,
+                //           child: Text(value),
+                //         );
+                //       }).toList(),
+                //       onChanged: (newValue) {
+                //         setState(() {
+                //           _selectedNoIdentitas = newValue!;
+                //         });
+                //       },
+                //       validator: (value) {
+                //         if (value == null || value.isEmpty) {
+                //           return 'No Identitas tidak boleh kosong';
+                //         }
+                //         return null;
+                //       },
+                //     ),
+                 SizedBox(height: 10),
+                TextFormField(
+                  controller: _noidentitasController,
+                  decoration: InputDecoration(
+                    hintText: " No Identitas",
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(20),
                     ),
-
+                  ),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'No identitas tidak boleh kosong';
+                    }
+                    return null;
+                  },
+                ),
                 SizedBox(height: 10),
                 TextFormField(
                   controller: _jumlahbarangController,

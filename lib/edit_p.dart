@@ -48,7 +48,7 @@ class _EditDataPageState extends State<EditpPage> {
 
   Future<bool> _updatep() async {
     final response = await http.post(
-      Uri.parse("http://10.108.19.8/jsonmobile/editp.php"),
+      Uri.parse("http://192.168.43.159/jsonmobile/editp.php"),
       body: {
         "id": id.text,
         "No_identitas": noidentitas.text,

@@ -18,7 +18,7 @@ class _DaftarBarangPageState extends State<DaftarBarangPage> {
 
   Future<void> _getdata() async {
     try {
-      final response = await http.get(Uri.parse("http://10.108.19.8/jsonmobile/read.php"));
+      final response = await http.get(Uri.parse("http://192.168.43.159/jsonmobile/read.php"));
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         print("Response data: $data"); // Log the response data
@@ -44,7 +44,7 @@ class _DaftarBarangPageState extends State<DaftarBarangPage> {
   Future<bool> _hapus(String id) async {
     try {
       final response = await http.post(
-        Uri.parse("http://10.108.19.8/jsonmobile/delete.php"),
+        Uri.parse("http://192.168.43.159/jsonmobile/delete.php"),
         body: {"id": id},
       );
       if (response.statusCode == 200) {

@@ -42,7 +42,7 @@ class _EditDataPageState extends State<EditDataPage> {
 
   Future<bool> _update() async {
     final response = await http.post(
-      Uri.parse("http://10.108.19.8/jsonmobile/edit.php"),
+      Uri.parse("http://192.168.43.159/jsonmobile/edit.php"),
       body: {
         "id": idController.text,
         "Kode_barang": kodeBarangController.text,

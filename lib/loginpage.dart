@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:uasmobile/home_page.dart';
+import 'package:uasmobile/user_page.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -17,7 +18,7 @@ class _LoginPageState extends State<LoginPage> {
 
   Future _login() async {
     var response = await http
-        .post(Uri.parse("http://10.108.19.8/jsonmobile/cek_login.php"),
+        .post(Uri.parse("http://192.168.43.159/jsonmobile/cek_login.php"),
 body: {
       "username": username.text,
       "password": password.text,
@@ -26,6 +27,7 @@ if (response.statusCode==200) {
 ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Login berhasil'),
+            backgroundColor: Colors.green,
           ),
         );
   Navigator.push(

@@ -18,7 +18,7 @@ class _daftaruserpageState extends State<daftaruserpage> {
   Future _getdata() async {
     try {
       final respone = await http
-          .get(Uri.parse("http://10.108.19.8/jsonmobile/readpeminjam.php"));
+          .get(Uri.parse("http://192.168.43.159/jsonmobile/readpeminjam.php"));
       if (respone.statusCode == 200) {
         final data = jsonDecode(respone.body);
         setState(() {

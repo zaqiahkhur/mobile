@@ -17,7 +17,7 @@ class _TambahDataPageState extends State<TambahDataPage> {
 
   Future<bool> _simpan() async {
     final response = await http.post(
-      Uri.parse("http://10.108.19.8/jsonmobile/create.php"),
+      Uri.parse("http://192.168.43.159/jsonmobile/create.php"),
       body: {
         "Kode_barang": Kode_barang.text,
         "nama barang": nama_barang.text,
