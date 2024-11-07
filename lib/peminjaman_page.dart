@@ -15,18 +15,14 @@ class PeminjamanPage extends StatefulWidget {
 
 class _PeminjamanPageState extends State<PeminjamanPage> {
   final _formKey = GlobalKey<FormState>();
-   final TextEditingController _noidentitasController = TextEditingController();
+  final TextEditingController _noidentitasController = TextEditingController();
   final TextEditingController _jumlahbarangController = TextEditingController();
   final TextEditingController _tanggalPinjamController = TextEditingController();
   final TextEditingController _tanggalKembaliController = TextEditingController();
   final TextEditingController _statusController = TextEditingController();
   final TextEditingController _keperluanController = TextEditingController();
-  TextEditingController _dateController = TextEditingController();
-
-  // Untuk Dropdown No Identitas
-  // List<String> _listNoIdentitas = [];
-  // String? _selectedNoIdentitas;
-  // bool _isLoading = true; // Indikator loading
+  final TextEditingController _kodePinjamController = TextEditingController();
+  final TextEditingController _dateController = TextEditingController();
 
   @override
   void dispose() {
@@ -36,26 +32,50 @@ class _PeminjamanPageState extends State<PeminjamanPage> {
     _dateController.dispose();
     _statusController.dispose();
     _keperluanController.dispose();
+    _kodePinjamController.dispose();
     super.dispose();
   }
 
-  // Fungsi untuk mengambil data dari API
-  // Future<void> fetchNoIdentitas() async {
-  //   final response = await http.get(Uri.parse('http://192.168.43.159/jsonmobile/noidentitas.php'));
+  @override
+  void initState() {
+    super.initState();
+    _statusController.text = "belum kembali"; // Inisialisasi status
+    _generateKodePinjam(); // Panggil fungsi untuk mengambil kode pinjam otomatis
+  }
 
-  //   if (response.statusCode == 200) {
-  //     final List<dynamic> data = json.decode(response.body);
-      
-  //     setState(() {
-  //       _listNoIdentitas = data.map((item) => item['no_identitas'].toString()).toList();
-  //       _isLoading = false; // Selesai loading
-  //     }); 
-  //   } else {
-  //     throw Exception('Failed to load No Identitas');
-  //   }
-  // }
+Future<void> _generateKodePinjam() async {
+  try {
+    final response = await http.get(Uri.parse("http://10.5.20.27/jsonmobile/get_last_kode_pinjam.php"));
 
-  // Fungsi untuk memilih tanggal
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      if (data['success']) {
+        // Pastikan kode pinjam terbaru berhasil diambil dan ditampilkan
+        String lastKodePinjam = data['kodeBarangPinjam'] ?? "PMJ000";
+
+        // Increment kode peminjaman
+        String angkaStr = lastKodePinjam.substring(3);
+        int angka = int.parse(angkaStr) + 1;
+        String newKodePinjam = "PMJ${angka.toString().padLeft(3, '0')}";
+
+        setState(() {
+          _kodePinjamController.text = newKodePinjam;
+        });
+      } else {
+        print("Error: ${data['message']}");
+      }
+    } else {
+      print("Server error: ${response.statusCode}");
+    }
+  } catch (e) {
+    print("Error: $e");
+    setState(() {
+      _kodePinjamController.text = "PMJ001"; // Default kode jika gagal
+    });
+  }
+}
+
+
   Future<void> _selectDate() async {
     DateTime? _picked = await showDatePicker(
       context: context,
@@ -70,12 +90,29 @@ class _PeminjamanPageState extends State<PeminjamanPage> {
     }
   }
 
-  // Fungsi untuk submit peminjaman
+
+  Future<bool> _checkStokBarang(int jumlahBarang) async {
+    try {
+      final response = await http.get(Uri.parse("http://10.5.20.27/jsonmobile/check_stok_barang.php?kode_barang=${widget.kodeBarang}"));
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        int stokTersedia = data['stok'] ?? 0;
+        return jumlahBarang <= stokTersedia;
+      } else {
+        throw Exception('Failed to fetch stock data');
+      }
+    } catch (e) {
+      print("Error: $e");
+      return false;
+    }
+  }
+
   Future<bool> _submitPeminjaman() async {
     try {
       final response = await http.post(
-        Uri.parse("http://192.168.43.159/jsonmobile/peminjaman.php"),
+        Uri.parse("http://10.5.20.27/jsonmobile/peminjaman.php"),
         body: {
+          "Kode_pinjam": _kodePinjamController.text, // Kirim kode_pinjam ke API
           "kode_barang": widget.kodeBarang,
           "no_identitas": _noidentitasController.text,
           "Jumlah_barang": _jumlahbarangController.text,
@@ -88,16 +125,12 @@ class _PeminjamanPageState extends State<PeminjamanPage> {
 
       if (response.statusCode == 200) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Peminjaman berhasil disimpan'),
-          ),
+          SnackBar(content: Text('Peminjaman berhasil disimpan')),
         );
-
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => DaftarPeminjamanPage()),
         );
-
         return true;
       } else {
         throw Exception('Gagal menyimpan peminjaman');
@@ -108,17 +141,11 @@ class _PeminjamanPageState extends State<PeminjamanPage> {
     }
   }
 
-  // @override
-  // void initState() {
-  //   super.initState();
-  //   fetchNoIdentitas(); // Panggil API untuk mendapatkan No Identitas
-  // }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Peminjaman Barang"),
+        title: Text("Peminjaman / Pengembalian Barang"),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -130,41 +157,21 @@ class _PeminjamanPageState extends State<PeminjamanPage> {
                 Text("Kode Barang: ${widget.kodeBarang}"),
                 Text("Nama Barang: ${widget.namaBarang}"),
                 SizedBox(height: 10),
-
-                // Dropdown untuk No Identitas
-                // _isLoading 
-                //   ? CircularProgressIndicator() // Jika sedang loading
-                //   : DropdownButtonFormField<String>(
-                //       value: _selectedNoIdentitas,
-                //       hint: const Text("Pilih No Identitas"),
-                //       decoration: InputDecoration(
-                //         border: OutlineInputBorder(
-                //           borderRadius: BorderRadius.circular(20),
-                //         ),
-                //       ),
-                //       items: _listNoIdentitas.map((String value) {
-                //         return DropdownMenuItem<String>(
-                //           value: value,
-                //           child: Text(value),
-                //         );
-                //       }).toList(),
-                //       onChanged: (newValue) {
-                //         setState(() {
-                //           _selectedNoIdentitas = newValue!;
-                //         });
-                //       },
-                //       validator: (value) {
-                //         if (value == null || value.isEmpty) {
-                //           return 'No Identitas tidak boleh kosong';
-                //         }
-                //         return null;
-                //       },
-                //     ),
-                 SizedBox(height: 10),
+                TextFormField(
+                  controller: _kodePinjamController,
+                  decoration: InputDecoration(
+                    labelText: "Kode Pinjam",
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                  ),
+                  readOnly: true, // Kode pinjam hanya bisa dibaca
+                ),
+                SizedBox(height: 10),
                 TextFormField(
                   controller: _noidentitasController,
                   decoration: InputDecoration(
-                    hintText: " No Identitas",
+                    hintText: "No Identitas",
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(20),
                     ),
@@ -193,74 +200,41 @@ class _PeminjamanPageState extends State<PeminjamanPage> {
                   },
                 ),
                 SizedBox(height: 10),
-               TextField(
-                controller: _dateController,
-                decoration: const InputDecoration(
-                  labelText: 'Tanggal Kembali',
-                  filled: true,
-                  prefixIcon: Icon(Icons.calendar_today),
-                  enabledBorder: OutlineInputBorder(
-                    borderSide: BorderSide.none,
+                TextField(
+                  controller: _dateController,
+                  decoration: const InputDecoration(
+                    labelText: 'Tanggal Kembali',
+                    filled: true,
+                    prefixIcon: Icon(Icons.calendar_today),
+                    enabledBorder: OutlineInputBorder(
+                      borderSide: BorderSide.none,
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: Colors.blue),
+                    ),
                   ),
-                  focusedBorder: OutlineInputBorder(
-                    borderSide: BorderSide(color: Colors.blue),
-                  ),
+                  readOnly: true,
+                  onTap: _selectDate,
                 ),
-                readOnly: true,
-                onTap: () {
-                  _selectDate();
-                },
-              ),
                 SizedBox(height: 10),
                 TextFormField(
                   controller: _statusController,
                   decoration: InputDecoration(
-                    hintText: "Status",
+                    hintText: "belum kembali",
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(20),
                     ),
                   ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Status tidak boleh kosong';
-                    }
-                    return null;
-                  },
-                ),
-                SizedBox(height: 10),
-                TextFormField(
-                  controller: _keperluanController,
-                  decoration: InputDecoration(
-                    hintText: "Keperluan",
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                  ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Keperluan tidak boleh kosong';
-                    }
-                    return null;
-                  },
+                  readOnly: true,
                 ),
                 SizedBox(height: 20),
                 ElevatedButton(
                   onPressed: () {
                     if (_formKey.currentState!.validate()) {
-                      _submitPeminjaman().then((value) {
-                        final snackBar = SnackBar(
-                          content: Text(
-                            value ? 'Peminjaman berhasil disimpan' : 'Peminjaman gagal disimpan',
-                          ),
-                        );
-                        ScaffoldMessenger.of(context).showSnackBar(snackBar);
-                        if (value) {
-                          Navigator.of(context).pop();
-                        }
-                      });
+                      _submitPeminjaman();
                     }
                   },
-                  child: Text('Submit'),
+                  child: Text('Pinjam Barang'),
                 ),
               ],
             ),

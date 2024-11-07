@@ -17,7 +17,7 @@ class _BarangKembaliListPageState extends State<BarangKembaliListPage> {
   Future<void> _getBarangDikembalikan() async {
     try {
       var response = await http
-          .get(Uri.parse("http://192.168.43.159/jsonmobile/barangsdhkembali.php"));
+          .get(Uri.parse("http://10.5.20.27/jsonmobile/barangsdhkembali.php"));
 
       if (response.statusCode == 200) {
         var data = jsonDecode(response.body);

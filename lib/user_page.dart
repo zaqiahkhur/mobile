@@ -3,9 +3,11 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:uasmobile/barangblmkembali.dart';
 import 'package:uasmobile/barangsdkbl_page.dart';
+import 'package:uasmobile/daftar_peminjaman_user.dart';
 import 'package:uasmobile/daftarbaranguser.dart';
 import 'package:uasmobile/daftar_peminjam.dart';
 import 'package:uasmobile/daftar_peminjaman_page.dart';
+import 'package:uasmobile/loginpage.dart';
 
 class HomePageUser extends StatefulWidget {
   @override
@@ -13,6 +15,7 @@ class HomePageUser extends StatefulWidget {
 }
 
 class _HomePageUserState extends State<HomePageUser> {
+   String username = 'abdul'; 
   var height, width;
   Map<String, dynamic> _data = {};
   List _listdata = [];
@@ -37,6 +40,16 @@ class _HomePageUserState extends State<HomePageUser> {
       });
     }
   }
+  
+  Future<void> _logout() async {
+  // Aksi lain yang diperlukan sebelum logout, seperti membersihkan variabel atau state
+  
+  Navigator.pushReplacement(
+    context,
+    MaterialPageRoute(builder: (context) =>  LoginPage()), // Kembali ke LoginPage
+  );
+}
+
 
   @override
   void initState() {
@@ -57,12 +70,12 @@ class _HomePageUserState extends State<HomePageUser> {
         child: ListView(
           padding: EdgeInsets.zero,
           children: <Widget>[
-            UserAccountsDrawerHeader(
-              accountName: Text("qias"),
+           UserAccountsDrawerHeader(
+              accountName: Text(username),
               accountEmail: Text(""),
-              currentAccountPicture: CircleAvatar(
-                backgroundImage: AssetImage("path_to_your_image.jpg"),
-              ),
+              // currentAccountPicture: CircleAvatar(
+              //   backgroundImage: AssetImage("path_to_your_image.jpg"),
+              // ),
               decoration: BoxDecoration(
                 color: Colors.indigo[300],
               ),
@@ -78,26 +91,31 @@ class _HomePageUserState extends State<HomePageUser> {
               },
             ),
             ListTile(
-              title: Text('Daftar Peminjaman'),
+             title: Text('Daftar Peminjaman'),
               onTap: () {
                 Navigator.pop(context);
-                Navigator.pushNamed(context, '/third');
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => DaftarPeminjamanUser()),
+                );
               },
             ),
-            ListTile(
-              title: Text('Daftar User'),
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.pushNamed(context, '/fourth');
-              },
-            ),
-            ListTile(
-              title: Text('Logout'),
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.pushNamed(context, '/five');
-              },
-            ),
+            // ListTile(
+            //   title: Text('Daftar User'),
+            //   onTap: () {
+            //     Navigator.pop(context);
+            //     Navigator.pushNamed(context, '/fourth');
+            //   },
+            // ),
+              ListTile(
+       leading: IconButton(icon:
+        Icon(Icons.logout),
+        onPressed: () {
+    _logout(); // Panggil fungsi logout
+  },
+        ), // Fungsi logout dipanggil di sini
+        
+      ),
           ],
         ),
       ),

@@ -17,7 +17,7 @@ class _DaftarBarangUserPageState extends State<DaftarBarangUserPage> {
 
   Future<void> _getdata() async {
     try {
-      final response = await http.get(Uri.parse("http://192.168.43.159/jsonmobile/read.php"));
+      final response = await http.get(Uri.parse("http://10.5.20.27/jsonmobile/read.php"));
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         print("Response data: $data"); // Log the response data
@@ -88,23 +88,23 @@ class _DaftarBarangUserPageState extends State<DaftarBarangUserPage> {
                     );
                   },
                 ),
-      floatingActionButton: FloatingActionButton(
-        child: Text(
-          "+",
-          style: TextStyle(fontSize: 30), 
-        ),
-        backgroundColor: Colors.indigo[300],
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => TambahDataPage()),
-          ).then((value) {
-            if (value == true) {
-              _getdata();
-            }
-          });
-        },
-      ),
+      // floatingActionButton: FloatingActionButton(
+      //   child: Text(
+      //     "+",
+      //     style: TextStyle(fontSize: 30), 
+      //   ),
+      //   backgroundColor: Colors.indigo[300],
+      //   onPressed: () {
+      //     Navigator.push(
+      //       context,
+      //       MaterialPageRoute(builder: (context) => TambahDataPage()),
+      //     ).then((value) {
+      //       if (value == true) {
+      //         _getdata();
+      //       }
+      //     });
+      //   },
+      // ),
     );
   }
 }

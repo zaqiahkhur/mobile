@@ -16,31 +16,72 @@ class _LoginPageState extends State<LoginPage> {
   TextEditingController username = TextEditingController();
   TextEditingController password = TextEditingController();
 
-  Future _login() async {
-    var response = await http
-        .post(Uri.parse("http://192.168.43.159/jsonmobile/cek_login.php"),
-body: {
+  @override
+  void dispose() {
+    username.dispose();
+    password.dispose();
+    super.dispose();
+  }
+
+ Future _login() async {
+  var response = await http.post(
+    Uri.parse("http://10.5.20.27/jsonmobile/cek_login.php"),
+    body: {
       "username": username.text,
       "password": password.text,
-    });
-if (response.statusCode==200) {
-ScaffoldMessenger.of(context).showSnackBar(
+    },
+  );
+
+  print(response.statusCode); // Debugging print
+
+  if (response.statusCode == 200) {
+    try {
+      var datauser = json.decode(response.body);
+      if (datauser['success'] == true) {
+        String role = datauser['role'];
+        ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Login berhasil'),
             backgroundColor: Colors.green,
           ),
         );
-  Navigator.push(
-    context, MaterialPageRoute(builder: (context)=> HomePage()));
-    debugPrint('berhasil');
-}else{
-ScaffoldMessenger.of(context).showSnackBar(
+
+        if (role == 'admin') {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => HomePage()), // Admin page
+          );
+        } else if (role == 'member') {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => HomePageUser()), // Member page
+          );
+        }
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Login gagal'),
+            content: Text('Username atau password salah'),
+            backgroundColor: Colors.red,
           ),
         );
-debugPrint('gagal');
-}
+      }
+    } catch (e) {
+      print("Response bukan JSON: ${response.body}");
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Terjadi kesalahan format data dari server'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  } else {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Terjadi kesalahan pada server'),
+        backgroundColor: Colors.red,
+      ),
+    );
+  }
 }
 
   @override
@@ -48,7 +89,7 @@ debugPrint('gagal');
     return Scaffold(
       appBar: AppBar(
         title: const Text(
-          "Login Page",
+          "Peminjaman Barang",
           style: TextStyle(
             color: Colors.white,
           ),
@@ -62,7 +103,7 @@ debugPrint('gagal');
             child: Text(
               "LOGIN",
               style: TextStyle(fontWeight: FontWeight.bold, fontSize: 23),
-            ),
+            ),  
           ),
           Padding(
             padding: const EdgeInsets.only(top: 40, left: 33),

@@ -14,47 +14,38 @@ class _DaftarPeminjamanPageState extends State<DaftarPeminjamanPage> {
   void initState() {
     super.initState();
     _fetchDataPeminjaman();
+    
   }
 
   // Fungsi untuk mengambil data peminjaman dari API
   Future<void> _fetchDataPeminjaman() async {
     try {
       final response = await http.get(
-        Uri.parse("http://192.168.43.159/jsonmobile/readpeminjaman.php"),
+        Uri.parse("http://10.5.20.27/jsonmobile/readpeminjaman.php"),
       );
 
-      if (response.statusCode == 200) {
-        var data = jsonDecode(response.body);
+     if (response.statusCode == 200) {
+  var data = jsonDecode(response.body);
+  print(data);  // Debugging untuk melihat respons dari server
 
-        // Parsing Jumlah_barang dari string ke int dengan error handling
-        List<Map<String, dynamic>> parsedData = [];
-        for (var item in data) {
-          int jumlahBarang;
-          try {
-            jumlahBarang =
-                int.parse(item['Jumlah_barang']); // Parsing dari string ke int
-          } catch (e) {
-            print('Error parsing jumlah_barang: $e'); // Handle error
-            jumlahBarang = 0; // Default value jika parsing gagal
-          }
+  List<Map<String, dynamic>> parsedData = [];
+  for (var item in data) {
+    parsedData.add({
+      'username': item['username'] ?? 'Tidak Diketahui',
+      'kode_barang': item['kode_barang'] ?? 'Tidak Ada',
+      'Kode_pinjam': item['Kode_pinjam'] ?? 'Tidak Diketahui',
+      'Jumlah_barang': int.tryParse(item['Jumlah_barang'] ?? '0') ?? 0,
+      'tanggal_pinjam': item['tanggal_pinjam'] ?? '-',
+      'tanggal_kembali': item['tanggal_kembali'] ?? '-',
+      'status': item['status'] ?? 'Tidak Diketahui',
+    });
+  }
 
-          parsedData.add({
-            'id':
-            int.tryParse(item['id']) ?? 0, // Pastikan 'id' juga berupa int
-            'username': item['username'],
-            'kode_barang': item['kode_barang'],
-            'Jumlah_barang':
-             jumlahBarang, // Menggunakan jumlah barang yang sudah di-parse
-            'tanggal_pinjam': item['tanggal_pinjam'],
-            'tanggal_kembali': item['tanggal_kembali'],
-            'status': item['status'],
-          });
-        }
-
-        setState(() {
-          _dataPeminjaman = parsedData;
-        });
-      } else {
+  setState(() {
+    _dataPeminjaman = parsedData;
+  });
+}
+ else {
         throw Exception('Gagal mengambil data peminjaman');
       }
     } catch (e) {
@@ -63,49 +54,28 @@ class _DaftarPeminjamanPageState extends State<DaftarPeminjamanPage> {
   }
 
   // Fungsi untuk mengembalikan barang
- Future<void> _kembalikanBarang(int idPeminjaman) async {
-  try {
-    final response = await http.post(
-      Uri.parse("http://192.168.43.159/jsonmobile/kembalikan_barang.php"),
-      body: {'id': idPeminjaman.toString()},
-    );
-    print('Response from server: ${response.body}');
+  Future<void> _kembalikanBarang(String kodePinjam) async {
+    try {
+      final response = await http.post(
+        Uri.parse("http://10.5.20.27/jsonmobile/kembalikan_barang.php"),
+        body: {'Kode_pinjam': kodePinjam},
+      );
 
-    // Pastikan kode status HTTP 200
-    if (response.statusCode == 200) {
-      if (response.body.isNotEmpty) {
-        final data = jsonDecode(response.body);
-
-        // Jika operasi berhasil
-        if (data['success'] == true) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Barang berhasil dikembalikan')),
-          );
-          _fetchDataPeminjaman(); // Memperbarui data peminjaman
+      if (response.statusCode == 200) {
+        var responseData = jsonDecode(response.body);
+        if (responseData['success']) {
+          print(responseData['message']);
+          _fetchDataPeminjaman(); // Refresh data setelah pengembalian
         } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(data['message'] ?? 'Terjadi kesalahan saat mengembalikan barang')),
-          );
+          print('Gagal mengembalikan barang: ${responseData['message']}');
         }
       } else {
-        // Tanggapan kosong dari server
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Tanggapan server kosong')),
-        );
+        throw Exception('Gagal menghubungi server');
       }
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Kesalahan server: ${response.statusCode}')),
-      );
+    } catch (e) {
+      print('Error: $e');
     }
-  } catch (e) {
-    // Tangani kesalahan jaringan atau parsing
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Terjadi kesalahan: $e')),
-    );
   }
-}
-
 
   @override
   Widget build(BuildContext context) {
@@ -119,30 +89,29 @@ class _DaftarPeminjamanPageState extends State<DaftarPeminjamanPage> {
               itemCount: _dataPeminjaman.length,
               itemBuilder: (context, index) {
                 final peminjaman = _dataPeminjaman[index];
+
                 return Card(
                   child: ListTile(
                     title: Text('Nama Peminjam: ${peminjaman['username']}'),
                     subtitle: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        Text('Kode Peminjaman: ${peminjaman['Kode_pinjam']}'),
                         Text('Kode Barang: ${peminjaman['kode_barang']}'),
-                        Text(
-                            'Jumlah: ${peminjaman['Jumlah_barang']}'), // Sudah dalam bentuk int
+                        Text('Jumlah: ${peminjaman['Jumlah_barang']}'),
                         Text('Tanggal Pinjam: ${peminjaman['tanggal_pinjam']}'),
-                        Text(
-                            'Tanggal Kembali: ${peminjaman['tanggal_kembali']}'),
+                        Text('Tanggal Kembali: ${peminjaman['tanggal_kembali']}'),
                         Text('Status: ${peminjaman['status']}'),
                       ],
                     ),
-                    trailing: peminjaman['status'] == 'belum kembali'
-                        ? ElevatedButton(
-                            onPressed: () {
-                              _kembalikanBarang(peminjaman[
-                                  'id']); // Panggil fungsi kembalikan barang
-                            },
-                            child: Text('Kembalikan'),
-                          )
-                        : Text('Sudah Kembali'),
+                    trailing: ElevatedButton(
+                      onPressed: peminjaman['status'] == 'belum kembali'
+                          ? () {
+                              _kembalikanBarang(peminjaman['Kode_pinjam']);
+                            }
+                          : null,
+                      child: Text('Kembalikan'),
+                    ),
                   ),
                 );
               },

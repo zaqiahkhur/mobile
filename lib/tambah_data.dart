@@ -17,7 +17,7 @@ class _TambahDataPageState extends State<TambahDataPage> {
 
   Future<bool> _simpan() async {
     final response = await http.post(
-      Uri.parse("http://192.168.43.159/jsonmobile/create.php"),
+      Uri.parse("http://10.5.20.27/jsonmobile/create.php"),
       body: {
         "Kode_barang": Kode_barang.text,
         "nama barang": nama_barang.text,
@@ -109,10 +109,10 @@ class _TambahDataPageState extends State<TambahDataPage> {
                       ScaffoldMessenger.of(context).showSnackBar(snackBar);
 
                       if (value) {
-                        Navigator.pushAndRemoveUntil(
+                          Navigator.pushAndRemoveUntil(
                           context,
-                          MaterialPageRoute(builder: (context) => HomePage()),
-                          (route) => false,
+                          MaterialPageRoute(builder: (context) => HomePage( )),
+                          (route) => false,  // Hapus semua route sebelumnya
                         );
                       }
                     });

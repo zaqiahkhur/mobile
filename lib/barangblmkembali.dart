@@ -16,7 +16,7 @@ class _BarangBelumKembaliListPageState extends State<BarangBelumKembaliListPage>
   // Fungsi untuk mendapatkan daftar barang yang belum dikembalikan dari API
   Future<void> _getBarangBelumDikembalikan() async {
     var response = await http
-        .get(Uri.parse("http://192.168.43.159/jsonmobile/barangblmkembali.php"));
+        .get(Uri.parse("http://10.5.20.27/jsonmobile/barangblmkembali.php"));
 
     if (response.statusCode == 200) {
       var data = jsonDecode(response.body);

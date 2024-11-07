@@ -9,11 +9,13 @@ import 'package:uasmobile/daftar_peminjaman_page.dart';
 import 'package:uasmobile/loginpage.dart';
 
 class HomePage extends StatefulWidget {
+  
   @override
   _HomePageState createState() => _HomePageState();
 }
 
 class _HomePageState extends State<HomePage> {
+    String username = 'qias';  // Username yang login
   var height, width;
     Map<String, dynamic> _data = {};
   List _listdata = [];
@@ -22,7 +24,7 @@ class _HomePageState extends State<HomePage> {
 
   Future<void> _getdata() async {
     try {
-      final response = await http.get(Uri.parse("http://192.168.43.159/jsonmobile/ambil_jumlah.php"));
+      final response = await http.get(Uri.parse("http://10.5.20.27/jsonmobile/ambil_jumlah.php"));
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         setState(() {
@@ -43,7 +45,7 @@ class _HomePageState extends State<HomePage> {
   Future<bool> _hapus(String id) async {
     try {
       final response = await http.post(
-        Uri.parse("http://192.168.43.159/jsonmobile/delete.php"),
+        Uri.parse("http://10.5.20.27/jsonmobile/delete.php"),
         body: {"id": id},
       );
       if (response.statusCode == 200) {
@@ -62,7 +64,7 @@ class _HomePageState extends State<HomePage> {
   
   Navigator.pushReplacement(
     context,
-    MaterialPageRoute(builder: (context) => const LoginPage()), // Kembali ke LoginPage
+    MaterialPageRoute(builder: (context) =>  LoginPage()), // Kembali ke LoginPage
   );
 }
 
@@ -87,11 +89,11 @@ class _HomePageState extends State<HomePage> {
           padding: EdgeInsets.zero,
           children: <Widget>[
             UserAccountsDrawerHeader(
-              accountName: Text("qias"),
+              accountName: Text(username),
               accountEmail: Text(""),
-              currentAccountPicture: CircleAvatar(
-                backgroundImage: AssetImage("path_to_your_image.jpg"),
-              ),
+              // currentAccountPicture: CircleAvatar(
+              //   backgroundImage: AssetImage("path_to_your_image.jpg"),
+              // ),
               decoration: BoxDecoration(
                 color: Colors.indigo[300],
               ),
@@ -145,6 +147,7 @@ class _HomePageState extends State<HomePage> {
                   fontSize: 35,
                 ),
               ),
+              
             ),
             // Expanded agar background biru lebih besar
             Expanded(
@@ -221,7 +224,7 @@ Widget _buildMenuItem(IconData icon, String label, String count, Widget page) {
           Text(
             count,  // Menggunakan count yang dikirim sebagai parameter
             style: TextStyle(fontSize: 16, color: Colors.grey),
-          ),
+          ),  
         ],
       ),
     ),
